@@ -27,12 +27,14 @@ output_dir = "exported_data"
 os.makedirs(output_dir, exist_ok=True)
 
 # User Input
-ticker = input("Input Currency (Ex: SOL-USD): ").strip()
-filename_prefix = input("Input Filename Prefix (Ex: solana_usd_historical_data): ").strip()
+ticker = input("Input Currency (Ex: BTC-USD): ").strip()
+
+# Auto-generate filename prefix
+filename_prefix = ticker.lower().replace("-", "_") + "_historical_data"
+
+# Tanggal
 start_date = input("Start Date (YYYY-MM-DD) [optional]: ").strip()
 end_date = input("End Date (YYYY-MM-DD) [optional]: ").strip()
-
-# Set default end_date = hari ini jika kosong
 if not end_date:
     end_date = datetime.today().strftime('%Y-%m-%d')
 
