@@ -9,12 +9,11 @@ if not files:
     print("⚠️ Tidak ada file CSV di folder 'exported_data'.")
     exit()
 
-# Tampilkan pilihan file
+# Pilihan file
 print("Pilih data yang ingin diprediksi (Ex: 1):\n")
 for i, f in enumerate(files, 1):
     print(f"{i}. {f}")
 
-# Input pilihan
 try:
     pilihan = int(input("\nMasukkan nomor file: "))
     selected_file = files[pilihan - 1]
@@ -24,21 +23,13 @@ except (ValueError, IndexError):
 
 file_path = os.path.join(folder, selected_file)
 
-# Ambil nama prefix dan timeframe dari nama file
+# Nama file jadi info
 file_name = selected_file.replace(".csv", "")
 parts = file_name.split("_")
-
-# Ambil aset dan currency
 asset = parts[0].upper()
 currency = parts[1].upper()
+raw_time = parts[-2] + "_" + parts[-1] if len(parts) >= 6 else parts[-1]
 
-# Ambil raw_time dari 2 bagian terakhir
-if len(parts) >= 6:
-    raw_time = parts[-2] + "_" + parts[-1]
-else:
-    raw_time = parts[-1]
-
-# Konversi timeframe biar enak dibaca :v
 timeframe_dict = {
     "5d": "5 hari",
     "3_months": "3 bulan",
@@ -46,11 +37,13 @@ timeframe_dict = {
     "1_year": "1 tahun",
     "5_years": "5 tahun",
     "max": "maksimal",
-    "daily": "rentang khusus"
+    "daily": "rentang khusus",
+    "weekly": "mingguan",
+    "monthly": "bulanan"
 }
 timeframe = timeframe_dict.get(raw_time, raw_time.replace("_", " "))
 
-# Baca file CSV
+# Baca CSV
 try:
     df = pd.read_csv(file_path, skiprows=[1, 2])
     df.rename(columns={"Price": "Date"}, inplace=True)
@@ -58,16 +51,64 @@ except Exception as e:
     print(f"❌ Gagal membaca file: {e}")
     exit()
 
-# Validasi kolom
 if 'Date' not in df.columns or 'Close' not in df.columns:
     print("❌ File tidak mengandung kolom 'Date' dan 'Close'.")
     exit()
 
-# Prediksi harga
+# Proses data
 df['Date'] = pd.to_datetime(df['Date'])
 df = df.sort_values('Date')
-last_5 = df.tail(5)
-prediksi = last_5['Close'].mean()
+df = df.drop_duplicates(subset='Date')
 
-# Output
-print(f"\n📈 Prediksi harga {asset} ke {currency} berdasarkan data {timeframe}: ${prediksi:.2f} USD")
+# Tampilkan info
+print(f"\n📅 Data dari {df['Date'].dt.strftime('%Y-%m-%d').iloc[0]} sampai {df['Date'].dt.strftime('%Y-%m-%d').iloc[-1]}")
+print(f"📊 Total data: {len(df)} baris")
+
+# Hitung Moving Average
+df['MA20'] = df['Close'].rolling(window=20).mean()
+df['MA50'] = df['Close'].rolling(window=50).mean()
+df['MA200'] = df['Close'].rolling(window=200).mean()
+
+# Input tanggal prediksi
+target_input = input("\n🕐 Input waktu yang ingin diprediksi harganya (YYYY-MM-DD): ").strip()
+
+# Validasi input
+try:
+    target_date = pd.to_datetime(target_input)
+except:
+    print("❌ Format tanggal tidak valid.")
+    exit()
+
+# Filter sampai tanggal target
+df_until_target = df[df['Date'] <= target_date]
+
+if df_until_target.empty:
+    print("⚠️ Tidak ada data sebelum tanggal tersebut.")
+    exit()
+
+# Prediksi rata-rata Close hingga target
+prediksi = df_until_target['Close'].mean()
+
+# Ambil baris terakhir sebelum/tanggal target untuk MA info
+ma_row = df_until_target.iloc[-1]
+
+# Output prediksi utama
+print(f"\n📈 Prediksi harga {asset} ke {currency} berdasarkan data hingga {target_date.strftime('%Y-%m-%d')} ({timeframe}): ${prediksi:.2f} USD")
+
+# Output Moving Average
+print("\n📊 Informasi Moving Average:")
+print(f"MA20  : {ma_row['MA20']:.2f}")
+print(f"MA50  : {ma_row['MA50']:.2f}")
+print(f"MA200 : {ma_row['MA200']:.2f}")
+
+# Cek sinyal persilangan MA
+print("\n📌 Sinyal MA Cross:")
+if ma_row['MA20'] > ma_row['MA50']:
+    print("- MA20 di atas MA50 → kemungkinan uptrend 🟢")
+else:
+    print("- MA20 di bawah MA50 → kemungkinan downtrend 🔴")
+
+if ma_row['MA20'] > ma_row['MA200']:
+    print("- MA20 di atas MA200 → jangka panjang cenderung naik 🟢")
+else:
+    print("- MA20 di bawah MA200 → jangka panjang cenderung turun 🔴")

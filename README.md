@@ -13,7 +13,8 @@ Alat ini mengambil data harga historis pada berbagai interval waktu (5 hari, 3 b
 - Mendukung rentang tanggal kustom
 - Retry otomatis jika terjadi kegagalan unduhan
 - Output terorganisir dalam format CSV untuk memudahkan analisis
-- Prediksi sederhana berdasarkan rata-rata harga 5 titik data terakhir
+- Prediksi harga berdasarkan data historis hingga tanggal target
+- Perhitungan Moving Average (MA20, MA50, MA200) dan analisis sinyal MA cross
 
 ## Instalasi
 
@@ -37,7 +38,7 @@ Alat ini mengambil data harga historis pada berbagai interval waktu (5 hari, 3 b
    
    Atau instal langsung:
    ```
-   pip install yfinance pandas
+   pip install yfinance pandas numpy requests
    ```
 
 ## Penggunaan
@@ -65,7 +66,12 @@ Alat ini mengambil data harga historis pada berbagai interval waktu (5 hari, 3 b
 
 2. Pilih file data yang ingin digunakan untuk prediksi dari daftar yang ditampilkan.
 
-3. Skrip akan menampilkan prediksi harga berdasarkan rata-rata 5 titik data terakhir.
+3. Masukkan tanggal target yang ingin diprediksi harganya.
+
+4. Skrip akan menampilkan:
+   - Prediksi harga berdasarkan rata-rata data hingga tanggal target
+   - Nilai Moving Average (MA20, MA50, MA200) pada tanggal tersebut
+   - Analisis sinyal MA cross dan indikasi kemungkinan trend pasar
 
 ### Contoh Penggunaan
 
@@ -114,7 +120,25 @@ reliable_download("BTC-USD", "bitcoin_custom_range.csv",
 
 ### Menggunakan Fitur Prediksi
 
-Skrip `prediksi.py` menyediakan prediksi sederhana berdasarkan rata-rata 5 data terakhir dari file CSV yang dipilih. Prediksi ini merupakan rata-rata sederhana dan dapat digunakan sebagai acuan dasar untuk analisis lebih lanjut.
+Skrip `prediksi.py` menyediakan beberapa analisis dan prediksi berdasarkan data historis yang telah diunduh:
+
+1. **Prediksi Harga**: Menghitung rata-rata harga penutupan (Close) untuk semua data hingga tanggal yang ditentukan.
+2. **Moving Average**: Menampilkan nilai MA20, MA50, dan MA200 pada tanggal target.
+3. **Analisis MA Cross**: Memberikan indikator trend pasar berdasarkan persilangan Moving Average.
+
+Contoh output prediksi:
+```
+📈 Prediksi harga BTC ke USD berdasarkan data hingga 2023-05-01 (1 tahun): $35267.89 USD
+
+📊 Informasi Moving Average:
+MA20  : 29876.54
+MA50  : 27345.67
+MA200 : 24567.89
+
+📌 Sinyal MA Cross:
+- MA20 di atas MA50 → kemungkinan uptrend 🟢
+- MA20 di atas MA200 → jangka panjang cenderung naik 🟢
+```
 
 ## Pemecahan Masalah
 
