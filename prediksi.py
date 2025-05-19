@@ -23,7 +23,7 @@ except (ValueError, IndexError):
 
 file_path = os.path.join(folder, selected_file)
 
-# Nama file jadi info
+# Info dari nama file
 file_name = selected_file.replace(".csv", "")
 parts = file_name.split("_")
 asset = parts[0].upper()
@@ -55,12 +55,10 @@ if 'Date' not in df.columns or 'Close' not in df.columns:
     print("❌ File tidak mengandung kolom 'Date' dan 'Close'.")
     exit()
 
-# Proses data
+# Persiapan data
 df['Date'] = pd.to_datetime(df['Date'])
-df = df.sort_values('Date')
-df = df.drop_duplicates(subset='Date')
+df = df.sort_values('Date').drop_duplicates(subset='Date')
 
-# Tampilkan info
 print(f"\n📅 Data dari {df['Date'].dt.strftime('%Y-%m-%d').iloc[0]} sampai {df['Date'].dt.strftime('%Y-%m-%d').iloc[-1]}")
 print(f"📊 Total data: {len(df)} baris")
 
@@ -69,46 +67,40 @@ df['MA20'] = df['Close'].rolling(window=20).mean()
 df['MA50'] = df['Close'].rolling(window=50).mean()
 df['MA200'] = df['Close'].rolling(window=200).mean()
 
-# Input tanggal prediksi
+# Input tanggal target
 target_input = input("\n🕐 Input waktu yang ingin diprediksi harganya (YYYY-MM-DD): ").strip()
-
-# Validasi input
 try:
     target_date = pd.to_datetime(target_input)
 except:
     print("❌ Format tanggal tidak valid.")
     exit()
 
-# Filter sampai tanggal target
 df_until_target = df[df['Date'] <= target_date]
 
 if df_until_target.empty:
     print("⚠️ Tidak ada data sebelum tanggal tersebut.")
     exit()
 
-# Prediksi rata-rata Close hingga target
-prediksi = df_until_target['Close'].mean()
+# Input jumlah hari terakhir
+try:
+    range_hari = int(input("📅 Ingin gunakan berapa hari terakhir untuk prediksi? (contoh: 5): ").strip())
+    df_recent = df_until_target.tail(range_hari)
+    prediksi = df_recent['Close'].mean()
+except:
+    prediksi = df_until_target['Close'].mean()
+    print("⚠️ Input tidak valid, menggunakan rata-rata seluruh data.")
 
-# Ambil baris terakhir sebelum/tanggal target untuk MA info
+# Ambil nilai MA terakhir
 ma_row = df_until_target.iloc[-1]
 
-# Output prediksi utama
+# Output
 print(f"\n📈 Prediksi harga {asset} ke {currency} berdasarkan data hingga {target_date.strftime('%Y-%m-%d')} ({timeframe}): ${prediksi:.2f} USD")
 
-# Output Moving Average
 print("\n📊 Informasi Moving Average:")
 print(f"MA20  : {ma_row['MA20']:.2f}")
 print(f"MA50  : {ma_row['MA50']:.2f}")
 print(f"MA200 : {ma_row['MA200']:.2f}")
 
-# Cek sinyal persilangan MA
 print("\n📌 Sinyal MA Cross:")
-if ma_row['MA20'] > ma_row['MA50']:
-    print("- MA20 di atas MA50 → kemungkinan uptrend 🟢")
-else:
-    print("- MA20 di bawah MA50 → kemungkinan downtrend 🔴")
-
-if ma_row['MA20'] > ma_row['MA200']:
-    print("- MA20 di atas MA200 → jangka panjang cenderung naik 🟢")
-else:
-    print("- MA20 di bawah MA200 → jangka panjang cenderung turun 🔴")
+print("- MA20 di atas MA50 → kemungkinan uptrend 🟢" if ma_row['MA20'] > ma_row['MA50'] else "- MA20 di bawah MA50 → kemungkinan downtrend 🔴")
+print("- MA20 di atas MA200 → jangka panjang cenderung naik 🟢" if ma_row['MA20'] > ma_row['MA200'] else "- MA20 di bawah MA200 → jangka panjang cenderung turun 🔴")
