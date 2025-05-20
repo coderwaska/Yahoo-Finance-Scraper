@@ -16,10 +16,10 @@ Alat ini mengambil data harga historis pada berbagai interval waktu (5 hari, 3 b
 - Prediksi harga berdasarkan data historis hingga tanggal target
 - Perhitungan Moving Average (MA20, MA50, MA200) dan analisis sinyal MA cross
 
-## Instalasi
-
 ## Video Demonstrasi
 [GoogleDrive](https://drive.google.com/file/d/1-W07x-ZzoNe0ogp5_bwidH0bwQbbYNwE/view)
+
+## Instalasi
 
 ### Prasyarat
 
