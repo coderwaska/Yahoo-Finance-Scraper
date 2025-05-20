@@ -18,6 +18,9 @@ Alat ini mengambil data harga historis pada berbagai interval waktu (5 hari, 3 b
 
 ## Instalasi
 
+## Video Demonstrasi
+[GoogleDrive](https://drive.google.com/file/d/1-W07x-ZzoNe0ogp5_bwidH0bwQbbYNwE/view)
+
 ### Prasyarat
 
 - Python 3.6 atau lebih tinggi
