@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
 # Cek isi folder
 folder = "exported_data"
@@ -85,7 +87,16 @@ if df_until_target.empty:
 try:
     range_hari = int(input("📅 Ingin gunakan berapa hari terakhir untuk prediksi? (contoh: 5): ").strip())
     df_recent = df_until_target.tail(range_hari)
-    prediksi = df_recent['Close'].mean()
+
+    # Konversi ke model prediksi
+    df_recent = df_recent.copy()
+    df_recent['Days'] = np.arange(len(df_recent)).reshape(-1, 1)
+
+    model = LinearRegression()
+    model.fit(df_recent[['Days']], df_recent['Close'])
+
+    next_day = np.array([[len(df_recent)]])
+    prediksi = model.predict(next_day)[0]
 except:
     prediksi = df_until_target['Close'].mean()
     print("⚠️ Input tidak valid, menggunakan rata-rata seluruh data.")
@@ -93,7 +104,7 @@ except:
 # Ambil nilai MA terakhir
 ma_row = df_until_target.iloc[-1]
 
-# Output
+# Output hasil prediksi
 print(f"\n📈 Prediksi harga {asset} ke {currency} berdasarkan data hingga {target_date.strftime('%Y-%m-%d')} ({timeframe}): ${prediksi:.2f} USD")
 
 print("\n📊 Informasi Moving Average:")
